@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties;
 import org.springframework.boot.actuate.endpoint.ExposableEndpoint;
 import org.springframework.boot.actuate.endpoint.invoke.convert.ConversionServiceParameterValueMapper;
 import org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver;
@@ -32,15 +31,11 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class SideApplicationBootstrap implements SmartLifecycle {
 	
-	private ApplicationContext hostAppCtx;
 	private AnnotationConfigServletWebServerApplicationContext ctx;
 	
 	public SideApplicationBootstrap(ApplicationContext hostAppCtx) {
-		this.hostAppCtx = hostAppCtx;
 		this.ctx = new AnnotationConfigServletWebServerApplicationContext();
 //		this.ctx.scan(this.getClass().getPackageName());
 		this.ctx.registerBean("webEndpoints", WebEndpointDiscoverer.class, () -> 
@@ -87,46 +82,27 @@ public class SideApplicationBootstrap implements SmartLifecycle {
 			return new DispatcherServlet();
 		}
 		
-		@Bean CorsEndpointProperties corsEndpointProps() {
-			return new CorsEndpointProperties();
-		}
-		
-		@Bean EndpointMediaTypes endpointMediaTypes() {
-			return EndpointMediaTypes.DEFAULT;
-		}
-
-		@Bean
-		ObjectMapper objectMapper() {
-			return new ObjectMapper();
-		}
-		
-//		@Bean
-//		MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-//			return new MappingJackson2HttpMessageConverter(objectMapper);
-//		}
-//		
-//		
-		@Bean
-		public WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(WebEndpointsSupplier webEndpointsSupplier,
+        @Bean
+        WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(WebEndpointsSupplier webEndpointsSupplier
 //				ServletEndpointsSupplier servletEndpointsSupplier, 
 //				ControllerEndpointsSupplier controllerEndpointsSupplier,
-				EndpointMediaTypes endpointMediaTypes, 
-				CorsEndpointProperties corsProperties
+//				EndpointMediaTypes endpointMediaTypes, 
+//                CorsEndpointProperties corsProperties
 //				WebEndpointProperties webEndpointProperties
 //				Environment environment
-		) {
-			List<ExposableEndpoint<?>> allEndpoints = new ArrayList<>();
-			Collection<ExposableWebEndpoint> webEndpoints = webEndpointsSupplier.getEndpoints();
-			allEndpoints.addAll(webEndpoints);
+        ) {
+            List<ExposableEndpoint<?>> allEndpoints = new ArrayList<>();
+            Collection<ExposableWebEndpoint> webEndpoints = webEndpointsSupplier.getEndpoints();
+            allEndpoints.addAll(webEndpoints);
 //			allEndpoints.addAll(servletEndpointsSupplier.getEndpoints());
 //			allEndpoints.addAll(controllerEndpointsSupplier.getEndpoints());
-			String basePath = "/";
-			EndpointMapping endpointMapping = new EndpointMapping(basePath);
-			boolean shouldRegisterLinksMapping = true;
-			return new WebMvcEndpointHandlerMapping(endpointMapping, webEndpoints, endpointMediaTypes,
-					corsProperties.toCorsConfiguration(), new EndpointLinksResolver(allEndpoints, basePath),
-					shouldRegisterLinksMapping, WebMvcAutoConfiguration.pathPatternParser);
-		}
+            String basePath = "/";
+            EndpointMapping endpointMapping = new EndpointMapping(basePath);
+            boolean shouldRegisterLinksMapping = true;
+            return new WebMvcEndpointHandlerMapping(endpointMapping, webEndpoints, EndpointMediaTypes.DEFAULT,
+                    null, new EndpointLinksResolver(allEndpoints, basePath),
+                    shouldRegisterLinksMapping, WebMvcAutoConfiguration.pathPatternParser);
+        }
 		
 		
 	}
